@@ -7,6 +7,8 @@ import (
 
 type WithdrawRepository interface {
 	FindByFilter(bankAccountID int, status string) ([]model.Withdraw, error)
+	FindByID(id int) (*model.Withdraw, error)
+	Update(withdraw *model.Withdraw) error
 }
 
 type withdrawRepository struct {
@@ -30,4 +32,17 @@ func (r *withdrawRepository) FindByFilter(bankAccountID int, status string) ([]m
 
 	err := query.Find(&withdraws).Error
 	return withdraws, err
+}
+
+func (r *withdrawRepository) FindByID(id int) (*model.Withdraw, error) {
+	var withdraw model.Withdraw
+	err := r.db.First(&withdraw, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &withdraw, nil
+}
+
+func (r *withdrawRepository) Update(withdraw *model.Withdraw) error {
+	return r.db.Save(withdraw).Error
 }
