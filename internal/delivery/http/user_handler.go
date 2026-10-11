@@ -15,6 +15,17 @@ func NewUserHandler(u usecase.UserUsecase) *UserHandler {
 	return &UserHandler{usecase: u}
 }
 
+// GetUser godoc
+// @Summary      Get User by ID
+// @Description  Get user details by ID
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  model.User
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /api/v1/users/{id} [get]
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {

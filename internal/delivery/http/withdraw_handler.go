@@ -16,6 +16,21 @@ func NewWithdrawHandler(u usecase.WithdrawUsecase) *WithdrawHandler {
 	return &WithdrawHandler{usecase: u}
 }
 
+// GetWithdraws godoc
+// @Summary      Get Withdraws
+// @Description  Get withdraw transactions with optional filter
+// @Tags         Withdraw
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Security     Timestamp
+// @Security     Signature
+// @Param        bank_account_id  query     int     false  "Bank Account ID"
+// @Param        status           query     string  false  "Status filter"
+// @Success      200              {object}  map[string]interface{}
+// @Failure      401              {object}  map[string]interface{}
+// @Failure      500              {object}  map[string]interface{}
+// @Router       /withdraw [get]
 func (h *WithdrawHandler) GetWithdraws(c *fiber.Ctx) error {
 	bankAccountID := c.QueryInt("bank_account_id", 0)
 	status := c.Query("status")
@@ -29,6 +44,21 @@ func (h *WithdrawHandler) GetWithdraws(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"data": data})
 }
 
+// UpdateWithdraw godoc
+// @Summary      Update Withdraw Status
+// @Description  Update withdraw status, notes, or unique code
+// @Tags         Withdraw
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Security     Timestamp
+// @Security     Signature
+// @Param        body  body      model.WithdrawUpdateRequest  true  "Withdraw Update Payload"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      401   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /withdraw/update [post]
 func (h *WithdrawHandler) UpdateWithdraw(c *fiber.Ctx) error {
 	var req model.WithdrawUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -49,6 +79,21 @@ func (h *WithdrawHandler) UpdateWithdraw(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "success", "message": "withdraw updated"})
 }
 
+// ValidateWithdraw godoc
+// @Summary      Validate Withdraw
+// @Description  Validate withdraw transaction
+// @Tags         Withdraw
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Security     Timestamp
+// @Security     Signature
+// @Param        body  body      model.WithdrawValidateRequest  true  "Withdraw Validate Payload"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      401   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /withdraw/validate [post]
 func (h *WithdrawHandler) ValidateWithdraw(c *fiber.Ctx) error {
 	var req model.WithdrawValidateRequest
 	if err := c.BodyParser(&req); err != nil {
