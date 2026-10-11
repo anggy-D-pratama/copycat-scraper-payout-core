@@ -25,7 +25,7 @@ func NewBankAccountHandler(u usecase.BankAccountUsecase) *BankAccountHandler {
 // @Security     Timestamp
 // @Security     Signature
 // @Param        account_number  query     string  true  "Account Number"
-// @Success      200             {object}  model.BankAccountResponse
+// @Success      200             {object}  map[string]interface{}
 // @Failure      400             {object}  map[string]interface{}
 // @Failure      401             {object}  map[string]interface{}
 // @Failure      404             {object}  map[string]interface{}
@@ -34,16 +34,25 @@ func (h *BankAccountHandler) GetBankAccount(c *fiber.Ctx) error {
 	accountNumber := c.Query("account_number")
 	if accountNumber == "" {
 		log.Printf("[ERROR] GetBankAccount: account_number is required")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "account_number is required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "error",
+			"data":   "Missing required parameter: account_number",
+		})
 	}
 
 	acc, err := h.usecase.GetByAccountNumber(accountNumber)
 	if err != nil {
 		log.Printf("[ERROR] GetBankAccount: account %s not found: %v", accountNumber, err)
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bank account not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "error",
+			"data":   "bank account not found",
+		})
 	}
 
-	return c.JSON(acc)
+	return c.JSON(fiber.Map{
+		"status": "success",
+		"data":   acc,
+	})
 }
 
 // GetDailyLimit godoc
@@ -56,7 +65,7 @@ func (h *BankAccountHandler) GetBankAccount(c *fiber.Ctx) error {
 // @Security     Timestamp
 // @Security     Signature
 // @Param        account_number  query     string  true  "Account Number"
-// @Success      200             {object}  model.DailyLimitResponse
+// @Success      200             {object}  map[string]interface{}
 // @Failure      400             {object}  map[string]interface{}
 // @Failure      401             {object}  map[string]interface{}
 // @Failure      404             {object}  map[string]interface{}
@@ -65,14 +74,23 @@ func (h *BankAccountHandler) GetDailyLimit(c *fiber.Ctx) error {
 	accountNumber := c.Query("account_number")
 	if accountNumber == "" {
 		log.Printf("[ERROR] GetDailyLimit: account_number is required")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "account_number is required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "error",
+			"data":   "Missing required parameter: account_number",
+		})
 	}
 
 	limit, err := h.usecase.GetDailyLimit(accountNumber)
 	if err != nil {
 		log.Printf("[ERROR] GetDailyLimit: account %s not found: %v", accountNumber, err)
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bank account not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "error",
+			"data":   "bank account not found",
+		})
 	}
 
-	return c.JSON(limit)
+	return c.JSON(fiber.Map{
+		"status": "success",
+		"data":   limit,
+	})
 }
