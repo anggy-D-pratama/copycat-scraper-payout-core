@@ -25,7 +25,9 @@ type WithdrawResponse struct {
 	BankCode        string  `json:"bank_code"`
 	Amount          float64 `json:"amount"`
 	Remark          string  `json:"remark"`
+	Notes           string  `json:"notes,omitempty"`
 	BankAccount     string  `json:"bank_account"`
+	BankAccountId   int     `json:"bank_account_id"`
 	UniqueCode      *string `json:"unique_code"`
 	Status          string  `json:"status"`
 }

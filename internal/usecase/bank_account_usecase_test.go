@@ -27,6 +27,13 @@ func TestBankAccountUsecase(t *testing.T) {
 				AccountNumber: "12345",
 				BankName:      "BCA",
 				AccountName:   "Tester",
+				DeviceID:      "dev-1",
+				DeviceCode:    "DEV-01",
+				PortAppium:    4723,
+				SafeKey:       "654321",
+				Pin:           "654321",
+				Username:      "tester",
+				Password:      "secret",
 				DailyLimit:    5000000,
 			},
 		},
@@ -37,6 +44,9 @@ func TestBankAccountUsecase(t *testing.T) {
 	acc, err := svc.GetByAccountNumber("12345")
 	if err != nil || acc.AccountNumber != "12345" {
 		t.Errorf("expected acc, got error or mismatch: %v", err)
+	}
+	if acc.Device.PortAppium != 4723 || acc.Device.Code != "DEV-01" || acc.SafeKey != "654321" {
+		t.Errorf("expected nested device and safe_key, got %+v", acc)
 	}
 
 	// Test GetByAccountNumber Not Found
@@ -49,5 +59,8 @@ func TestBankAccountUsecase(t *testing.T) {
 	limit, err := svc.GetDailyLimit("12345")
 	if err != nil || limit.DailyLimit != 5000000 {
 		t.Errorf("expected limit 5000000, got: %v", limit)
+	}
+	if limit.IsReached != false || limit.Reached != false {
+		t.Errorf("expected is_reached and reached to be false, got: %+v", limit)
 	}
 }

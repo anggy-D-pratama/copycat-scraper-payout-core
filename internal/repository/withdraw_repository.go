@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"strings"
+
 	"boilerplate/internal/model"
 	"gorm.io/gorm"
 )
@@ -27,7 +29,9 @@ func (r *withdrawRepository) FindByFilter(bankAccountID int, status string) ([]m
 		query = query.Where("bank_account_id = ?", bankAccountID)
 	}
 	if status != "" {
-		query = query.Where("status = ?", status)
+		statusLower := strings.ToLower(status)
+		statusUpper := strings.ToUpper(status)
+		query = query.Where("LOWER(status) = ? OR status = ? OR status = ?", statusLower, statusLower, statusUpper)
 	}
 
 	err := query.Find(&withdraws).Error
