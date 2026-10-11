@@ -1,6 +1,7 @@
 package http
 
 import (
+	_ "boilerplate/docs"
 	"boilerplate/internal/delivery/http/middleware"
 
 	"github.com/gofiber/fiber/v2"

@@ -15,6 +15,21 @@ func NewBankAccountHandler(u usecase.BankAccountUsecase) *BankAccountHandler {
 	return &BankAccountHandler{usecase: u}
 }
 
+// GetBankAccount godoc
+// @Summary      Get Bank Account
+// @Description  Get bank account detail by account number
+// @Tags         Bank Account
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Security     Timestamp
+// @Security     Signature
+// @Param        account_number  query     string  true  "Account Number"
+// @Success      200             {object}  model.BankAccountResponse
+// @Failure      400             {object}  map[string]interface{}
+// @Failure      401             {object}  map[string]interface{}
+// @Failure      404             {object}  map[string]interface{}
+// @Router       /bank-account [get]
 func (h *BankAccountHandler) GetBankAccount(c *fiber.Ctx) error {
 	accountNumber := c.Query("account_number")
 	if accountNumber == "" {
@@ -31,6 +46,21 @@ func (h *BankAccountHandler) GetBankAccount(c *fiber.Ctx) error {
 	return c.JSON(acc)
 }
 
+// GetDailyLimit godoc
+// @Summary      Get Daily Limit
+// @Description  Get daily limit for bank account
+// @Tags         Bank Account
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Security     Timestamp
+// @Security     Signature
+// @Param        account_number  query     string  true  "Account Number"
+// @Success      200             {object}  model.DailyLimitResponse
+// @Failure      400             {object}  map[string]interface{}
+// @Failure      401             {object}  map[string]interface{}
+// @Failure      404             {object}  map[string]interface{}
+// @Router       /bank-account/daily-limit [get]
 func (h *BankAccountHandler) GetDailyLimit(c *fiber.Ctx) error {
 	accountNumber := c.Query("account_number")
 	if accountNumber == "" {
