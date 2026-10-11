@@ -1,6 +1,8 @@
 package http
 
 import (
+	"boilerplate/internal/delivery/http/middleware"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 )
@@ -27,12 +29,17 @@ func SetupRoutes(app *fiber.App, h *Handlers) {
 	api := app.Group("/api/v1")
 	api.Get("/users/:id", h.User.GetUser)
 
-	// Bank Account Routes
-	app.Get("/bank-account", h.BankAccount.GetBankAccount)
-	app.Get("/bank-account/daily-limit", h.BankAccount.GetDailyLimit)
+	// HMAC Authentication Middleware untuk Endpoint Core
+	hmacAuth := middleware.NewHMACAuth()
 
-	// Withdraw Routes
-	app.Get("/withdraw", h.Withdraw.GetWithdraws)
-	app.Post("/withdraw/update", h.Withdraw.UpdateWithdraw)
-	app.Post("/withdraw/validate", h.Withdraw.ValidateWithdraw)
+	// Bank Account Routes (Protected)
+	bankAccount := app.Group("/bank-account", hmacAuth)
+	bankAccount.Get("", h.BankAccount.GetBankAccount)
+	bankAccount.Get("/daily-limit", h.BankAccount.GetDailyLimit)
+
+	// Withdraw Routes (Protected)
+	withdraw := app.Group("/withdraw", hmacAuth)
+	withdraw.Get("", h.Withdraw.GetWithdraws)
+	withdraw.Post("/update", h.Withdraw.UpdateWithdraw)
+	withdraw.Post("/validate", h.Withdraw.ValidateWithdraw)
 }
