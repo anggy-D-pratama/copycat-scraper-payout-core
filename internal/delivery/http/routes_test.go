@@ -1,18 +1,92 @@
 package http
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"boilerplate/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockBankAccountUsecase struct{}
+
+func (m *mockBankAccountUsecase) GetByAccountNumber(accountNumber string) (*model.BankAccountResponse, error) {
+	if accountNumber == "1234567890" {
+		return &model.BankAccountResponse{
+			ID:            1,
+			AccountNumber: "1234567890",
+			BankName:      "BCA",
+			AccountName:   "Bot Testing Account",
+			DeviceID:      "device-123",
+			Device: model.DeviceResponse{
+				ID:         1,
+				Code:       "device-123",
+				PortAppium: 4723,
+			},
+			SafeKey:  "123456",
+			Pin:      "123456",
+			Username: "bot_user",
+			Password: "password",
+		}, nil
+	}
+	return nil, errors.New("not found")
+}
+
+func (m *mockBankAccountUsecase) GetDailyLimit(accountNumber string) (*model.DailyLimitResponse, error) {
+	if accountNumber == "1234567890" {
+		return &model.DailyLimitResponse{
+			AccountNumber: "1234567890",
+			DailyLimit:    100000000,
+			DailyLimitTrx: 500,
+			CountToday:    0,
+			IsReached:     false,
+			Reached:       false,
+		}, nil
+	}
+	return nil, errors.New("not found")
+}
+
+type mockWithdrawUsecase struct{}
+
+func (m *mockWithdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]model.WithdrawResponse, error) {
+	return []model.WithdrawResponse{
+		{
+			ID:              1,
+			TransactionNo:   "TRX-001",
+			TransactionCode: "TXC-001",
+			BankCode:        "BCA",
+			Amount:          50000,
+			Remark:          "Test withdraw 1",
+			BankAccount:     "1234567890",
+			BankAccountId:   1,
+			Status:          "queue",
+		},
+	}, nil
+}
+
+func (m *mockWithdrawUsecase) UpdateWithdraw(req model.WithdrawUpdateRequest) error {
+	if req.ID == 999 {
+		return errors.New("not found")
+	}
+	return nil
+}
+
+func (m *mockWithdrawUsecase) ValidateWithdraw(req model.WithdrawValidateRequest) error {
+	if req.TransactionNo != "TRX-001" {
+		return errors.New("invalid transaction_no")
+	}
+	return nil
+}
 
 func genSig(secretKey, apiKey, timestamp string) string {
 	mac := hmac.New(sha256.New, []byte(secretKey))
@@ -31,17 +105,13 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 	}()
 
 	app := fiber.New()
-	dummyHandler := func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
-	}
 
 	handlers := &Handlers{
 		User:        &UserHandler{},
-		Withdraw:    &WithdrawHandler{},
-		BankAccount: &BankAccountHandler{},
+		Withdraw:    NewWithdrawHandler(&mockWithdrawUsecase{}),
+		BankAccount: NewBankAccountHandler(&mockBankAccountUsecase{}),
 	}
 
-	// Buat router dengan handlers mock/override untuk route test
 	SetupRoutes(app, handlers)
 
 	t.Run("Public Route Health Check - No Auth Header Required", func(t *testing.T) {
@@ -96,15 +166,112 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		ts := "1773223200000"
 		sig := genSig(secretKey, apiKey, ts)
 
-		req := httptest.NewRequest(http.MethodGet, "/bank-account", nil)
+		req := httptest.NewRequest(http.MethodGet, "/bank-account?account_number=1234567890", nil)
 		req.Header.Set("x-api-key", apiKey)
 		req.Header.Set("x-timestamp", ts)
 		req.Header.Set("x-signature", sig)
 
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
-		// Request lolos ke handler bankAccount (yang mungkin 500 karena DB belum konek di unit test, tapi bukan 401 Unauthorized)
-		assert.NotEqual(t, fiber.StatusUnauthorized, resp.StatusCode)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+		data, ok := body["data"].(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, "1234567890", data["account_number"])
+		assert.Equal(t, "123456", data["safe_key"])
+		device, ok := data["device"].(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, float64(4723), device["port_appium"])
 	})
-	_ = dummyHandler
+
+	t.Run("Protected Route /bank-account/daily-limit - Valid Envelope Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		req := httptest.NewRequest(http.MethodGet, "/bank-account/daily-limit?account_number=1234567890", nil)
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+		data, ok := body["data"].(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, false, data["is_reached"])
+		assert.Equal(t, false, data["reached"])
+	})
+
+	t.Run("Protected Route GET /withdraw - Valid Envelope Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		req := httptest.NewRequest(http.MethodGet, "/withdraw?bank_account_id=1&status=queue", nil)
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+		data, ok := body["data"].([]interface{})
+		assert.True(t, ok)
+		assert.Len(t, data, 1)
+	})
+
+	t.Run("Protected Route POST /withdraw/validate - Valid Envelope Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		payload := []byte(`{"id":1,"transaction_no":"TRX-001","transaction_code":"TXC-001"}`)
+		req := httptest.NewRequest(http.MethodPost, "/withdraw/validate", bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+	})
+
+	t.Run("Protected Route POST /withdraw/update - Valid Envelope Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		payload := []byte(`{"id":1,"status":"process","notes":"ok","unique_code":"REF1"}`)
+		req := httptest.NewRequest(http.MethodPost, "/withdraw/update", bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+	})
 }

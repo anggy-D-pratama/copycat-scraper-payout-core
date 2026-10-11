@@ -439,6 +439,17 @@ const docTemplate = `{
                 "bank_name": {
                     "type": "string"
                 },
+                "device": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string"
+                        },
+                        "port_appium": {
+                            "type": "integer"
+                        }
+                    }
+                },
                 "device_id": {
                     "type": "string"
                 },
@@ -449,6 +460,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pin": {
+                    "type": "string"
+                },
+                "safe_key": {
                     "type": "string"
                 },
                 "username": {
@@ -462,8 +476,20 @@ const docTemplate = `{
                 "account_number": {
                     "type": "string"
                 },
+                "count_today": {
+                    "type": "integer"
+                },
                 "daily_limit": {
                     "type": "number"
+                },
+                "daily_limit_transaction": {
+                    "type": "integer"
+                },
+                "is_reached": {
+                    "type": "boolean"
+                },
+                "reached": {
+                    "type": "boolean"
                 }
             }
         },
@@ -476,11 +502,17 @@ const docTemplate = `{
                 "bank_account": {
                     "type": "string"
                 },
+                "bank_account_id": {
+                    "type": "integer"
+                },
                 "bank_code": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
                 },
                 "remark": {
                     "type": "string"
