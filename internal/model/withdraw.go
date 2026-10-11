@@ -6,6 +6,7 @@ type Withdraw struct {
 	ID              int       `gorm:"primaryKey;autoIncrement" json:"id"`
 	TransactionNo   string    `gorm:"type:varchar(100);not null" json:"transaction_no"`
 	TransactionCode string    `gorm:"type:varchar(100)" json:"transaction_code"`
+	BankCode        string    `gorm:"type:varchar(50)" json:"bank_code"`
 	Amount          float64   `gorm:"type:decimal(16,2);not null" json:"amount"`
 	Remark          string    `gorm:"type:text" json:"remark"`
 	Notes           string    `gorm:"type:text" json:"notes"`
@@ -18,13 +19,15 @@ type Withdraw struct {
 }
 
 type WithdrawResponse struct {
-	ID            int     `json:"id"`
-	TransactionNo string  `json:"transaction_no"`
-	Amount        float64 `json:"amount"`
-	Remark        string  `json:"remark"`
-	BankAccount   string  `json:"bank_account"`
-	UniqueCode    *string `json:"unique_code"`
-	Status        string  `json:"status"`
+	ID              int     `json:"id"`
+	TransactionNo   string  `json:"transaction_no"`
+	TransactionCode string  `json:"transaction_code"`
+	BankCode        string  `json:"bank_code"`
+	Amount          float64 `json:"amount"`
+	Remark          string  `json:"remark"`
+	BankAccount     string  `json:"bank_account"`
+	UniqueCode      *string `json:"unique_code"`
+	Status          string  `json:"status"`
 }
 
 type WithdrawUpdateRequest struct {

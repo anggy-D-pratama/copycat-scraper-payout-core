@@ -37,7 +37,7 @@ func (m *mockWithdrawRepo) Update(w *model.Withdraw) error {
 func TestWithdrawUsecase(t *testing.T) {
 	repo := &mockWithdrawRepo{
 		data: map[int]*model.Withdraw{
-			1: {ID: 1, BankAccountId: 10, Status: "QUEUE", TransactionNo: "TRX-1"},
+			1: {ID: 1, BankAccountId: 10, Status: "QUEUE", TransactionNo: "TRX-1", TransactionCode: "TXC-1", BankCode: "BCA"},
 		},
 	}
 	svc := usecase.NewWithdrawUsecase(repo)
@@ -46,6 +46,9 @@ func TestWithdrawUsecase(t *testing.T) {
 	ws, err := svc.GetWithdraws(10, "QUEUE")
 	if err != nil || len(ws) != 1 {
 		t.Errorf("expected 1 withdraw, got: %v", len(ws))
+	}
+	if ws[0].BankCode != "BCA" || ws[0].TransactionCode != "TXC-1" {
+		t.Errorf("expected BankCode BCA and TransactionCode TXC-1, got %s and %s", ws[0].BankCode, ws[0].TransactionCode)
 	}
 
 	// Test UpdateWithdraw

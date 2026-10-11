@@ -76,20 +76,24 @@ func seed(db *gorm.DB) {
 		db.Create(&acc)
 
 		db.Create(&model.Withdraw{
-			TransactionNo: "TRX-001",
-			Amount:        50000,
-			Remark:        "Test withdraw 1",
-			BankAccount:   "1234567890",
-			BankAccountId: acc.ID,
-			Status:        "QUEUE",
+			TransactionNo:   "TRX-001",
+			TransactionCode: "TXC-001",
+			BankCode:        "BCA",
+			Amount:          50000,
+			Remark:          "Test withdraw 1",
+			BankAccount:     "1234567890",
+			BankAccountId:   acc.ID,
+			Status:          "QUEUE",
 		})
 		db.Create(&model.Withdraw{
-			TransactionNo: "TRX-002",
-			Amount:        150000,
-			Remark:        "Test withdraw 2",
-			BankAccount:   "1234567890",
-			BankAccountId: acc.ID,
-			Status:        "QUEUE",
+			TransactionNo:   "TRX-002",
+			TransactionCode: "TXC-002",
+			BankCode:        "BCA",
+			Amount:          150000,
+			Remark:          "Test withdraw 2",
+			BankAccount:     "1234567890",
+			BankAccountId:   acc.ID,
+			Status:          "QUEUE",
 		})
 	}
 }

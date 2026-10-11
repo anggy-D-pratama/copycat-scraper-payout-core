@@ -476,6 +476,9 @@ const docTemplate = `{
                 "bank_account": {
                     "type": "string"
                 },
+                "bank_code": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -483,6 +486,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "transaction_code": {
                     "type": "string"
                 },
                 "transaction_no": {
