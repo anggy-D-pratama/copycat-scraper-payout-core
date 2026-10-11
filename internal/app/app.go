@@ -2,6 +2,8 @@ package app
 
 import (
 	"log"
+	"os"
+	"strings"
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
@@ -45,7 +47,15 @@ func Run() {
 
 	httpDelivery.SetupRoutes(server, handlers)
 
-	log.Fatal(server.Listen(":3000"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+
+	log.Fatal(server.Listen(port))
 }
 
 func seed(db *gorm.DB) {

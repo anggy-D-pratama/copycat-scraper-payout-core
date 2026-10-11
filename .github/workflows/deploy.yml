@@ -1,0 +1,92 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+  WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+  GAR_LOCATION: ${{ secrets.GAR_LOCATION || 'asia-southeast2' }}
+  GAR_REPOSITORY: ${{ secrets.GAR_REPOSITORY || 'copycat-payout-core' }}
+  SERVICE_NAME: ${{ secrets.CLOUD_RUN_SERVICE || 'copycat-payout-core' }}
+  REGION: ${{ secrets.CLOUD_RUN_REGION || 'asia-southeast2' }}
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via WIF
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GAR_LOCATION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Set Image Tag
+        id: meta
+        run: |
+          IMAGE_BASE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}"
+          echo "image_base=${IMAGE_BASE}" >> "$GITHUB_OUTPUT"
+          echo "image_sha=${IMAGE_BASE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          echo "image_latest=${IMAGE_BASE}:latest" >> "$GITHUB_OUTPUT"
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build \
+            -t "${{ steps.meta.outputs.image_sha }}" \
+            -t "${{ steps.meta.outputs.image_latest }}" \
+            .
+          docker push "${{ steps.meta.outputs.image_sha }}"
+          docker push "${{ steps.meta.outputs.image_latest }}"
+
+      - name: Fetch Secret Environment from Google Secret Manager
+        id: secrets
+        run: |
+          echo "Fetching secret payout-core-env from Google Secret Manager..."
+          SECRET_PAYLOAD=$(gcloud secrets versions access latest --secret="payout-core-env" --project="${{ env.PROJECT_ID }}")
+
+          # Parse JSON key-values into Cloud Run env format (KEY1=VAL1,KEY2=VAL2)
+          # Mask sensitive values in GitHub Actions log
+          echo "$SECRET_PAYLOAD" | jq -r 'to_entries[] | "::add-mask::\(.value)"'
+          ENV_PAIRS=$(echo "$SECRET_PAYLOAD" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+          echo "env_vars=${ENV_PAIRS}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Google Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ steps.meta.outputs.image_sha }}
+          env_vars: ${{ steps.secrets.outputs.env_vars }}
+          flags: |
+            --port=8080
+            --min-instances=0
+            --max-instances=10
+            --allow-unauthenticated
+
+      - name: Show Output URL
+        run: |
+          echo "Deployment finished successfully!"
+          echo "Service URL: ${{ steps.deploy.outputs.url }}"
