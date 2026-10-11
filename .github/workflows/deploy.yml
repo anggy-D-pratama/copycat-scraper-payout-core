@@ -86,7 +86,6 @@ jobs:
             --min-instances=0
             --max-instances=10
             --allow-unauthenticated
-            --startup-probe-path=/api/health
 
       - name: Show Output URL
         run: |
