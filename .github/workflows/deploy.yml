@@ -66,11 +66,13 @@ jobs:
           echo "Fetching secret payout-core-env from Google Secret Manager..."
           SECRET_PAYLOAD=$(gcloud secrets versions access latest --secret="payout-core-env" --project="${{ env.PROJECT_ID }}")
 
-          # Parse JSON key-values into Cloud Run env format (KEY1=VAL1,KEY2=VAL2)
+          # Parse JSON key-values into Cloud Run env format (KEY=VAL per line)
           # Mask sensitive values in GitHub Actions log
           echo "$SECRET_PAYLOAD" | jq -r 'to_entries[] | "::add-mask::\(.value)"'
-          ENV_PAIRS=$(echo "$SECRET_PAYLOAD" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
-          echo "env_vars=${ENV_PAIRS}" >> "$GITHUB_OUTPUT"
+          ENV_PAIRS=$(echo "$SECRET_PAYLOAD" | jq -r 'to_entries | map("\(.key)=\(.value)") | join("\n")')
+          echo "env_vars<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$ENV_PAIRS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Google Cloud Run
         id: deploy
