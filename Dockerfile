@@ -1,13 +1,20 @@
 FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
-COPY . .
-RUN go mod tidy
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+COPY go.mod go.sum ./
+RUN go mod download
 
-FROM alpine:latest
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main .
+
+FROM alpine:3.19
 WORKDIR /app
+
+RUN apk --no-cache add ca-certificates tzdata
+
 COPY --from=builder /app/main .
 
-EXPOSE 3000
+ENV PORT=8080
+EXPOSE 8080
+
 CMD ["./main"]
