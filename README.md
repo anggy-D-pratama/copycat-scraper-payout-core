@@ -15,8 +15,22 @@ Service Account yang digunakan oleh GitHub Actions (`WIF_SERVICE_ACCOUNT`) memer
 - `roles/run.admin` (Cloud Run Admin)
 - `roles/artifactregistry.writer` (Artifact Registry Writer)
 - `roles/iam.serviceAccountUser` (Service Account User)
+- `roles/secretmanager.secretAccessor` (Secret Manager Secret Accessor)
 
-### 2. GitHub Actions Secrets / Variables
+### 2. Google Secret Manager (`payout-core-env`)
+
+Secret `payout-core-env` harus dibuat di Google Secret Manager dengan format JSON (sesuai `.env.example`):
+```json
+{
+  "DB_USER": "payout_user",
+  "DB_PASSWORD": "secure_db_password",
+  "DB_HOST": "10.0.0.3",
+  "DB_PORT": "3306",
+  "DB_NAME": "payout_core"
+}
+```
+
+### 3. GitHub Actions Secrets / Variables
 
 Konfigurasikan Secrets berikut di repositori GitHub (**Settings > Secrets and variables > Actions > Secrets**):
 

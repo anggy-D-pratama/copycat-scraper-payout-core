@@ -60,6 +60,18 @@ jobs:
           docker push "${{ steps.meta.outputs.image_sha }}"
           docker push "${{ steps.meta.outputs.image_latest }}"
 
+      - name: Fetch Secret Environment from Google Secret Manager
+        id: secrets
+        run: |
+          echo "Fetching secret payout-core-env from Google Secret Manager..."
+          SECRET_PAYLOAD=$(gcloud secrets versions access latest --secret="payout-core-env" --project="${{ env.PROJECT_ID }}")
+
+          # Parse JSON key-values into Cloud Run env format (KEY1=VAL1,KEY2=VAL2)
+          # Mask sensitive values in GitHub Actions log
+          echo "$SECRET_PAYLOAD" | jq -r 'to_entries[] | "::add-mask::\(.value)"'
+          ENV_PAIRS=$(echo "$SECRET_PAYLOAD" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+          echo "env_vars=${ENV_PAIRS}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to Google Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
@@ -67,6 +79,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ steps.meta.outputs.image_sha }}
+          env_vars: ${{ steps.secrets.outputs.env_vars }}
           flags: |
             --port=8080
             --min-instances=0
