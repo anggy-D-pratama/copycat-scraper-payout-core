@@ -1,26 +1,30 @@
 package http
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
-	"boilerplate/internal/service"
+	"boilerplate/internal/usecase"
 )
 
 type UserHandler struct {
-	service service.UserService
+	usecase usecase.UserUsecase
 }
 
-func NewUserHandler(s service.UserService) *UserHandler {
-	return &UserHandler{service: s}
+func NewUserHandler(u usecase.UserUsecase) *UserHandler {
+	return &UserHandler{usecase: u}
 }
 
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
+		log.Printf("[ERROR] GetUser: invalid id parameter: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
-	user, err := h.service.GetUserData(id)
+	user, err := h.usecase.GetUserData(id)
 	if err != nil {
+		log.Printf("[ERROR] GetUser: failed to get user %d: %v", id, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
