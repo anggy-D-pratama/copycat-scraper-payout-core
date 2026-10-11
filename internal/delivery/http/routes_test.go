@@ -51,6 +51,22 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 	})
 
+	t.Run("Swagger Route /swagger/doc.json - Returns 200 and Valid JSON", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/swagger/doc.json", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+	})
+
+	t.Run("Swagger Route /swagger/index.html - Returns 200 HTML", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/swagger/index.html", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		assert.Contains(t, resp.Header.Get("Content-Type"), "text/html")
+	})
+
 	t.Run("Protected Route /bank-account - Rejected without Auth Header", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/bank-account", nil)
 		resp, err := app.Test(req)
