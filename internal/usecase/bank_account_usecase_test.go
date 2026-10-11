@@ -1,11 +1,11 @@
-package service_test
+package usecase_test
 
 import (
 	"errors"
 	"testing"
 
 	"boilerplate/internal/model"
-	"boilerplate/internal/service"
+	"boilerplate/internal/usecase"
 )
 
 type mockBankAccountRepo struct {
@@ -19,7 +19,7 @@ func (m *mockBankAccountRepo) FindByAccountNumber(accNo string) (*model.BankAcco
 	return nil, errors.New("not found")
 }
 
-func TestBankAccountService(t *testing.T) {
+func TestBankAccountUsecase(t *testing.T) {
 	repo := &mockBankAccountRepo{
 		data: map[string]*model.BankAccount{
 			"12345": {
@@ -31,7 +31,7 @@ func TestBankAccountService(t *testing.T) {
 			},
 		},
 	}
-	svc := service.NewBankAccountService(repo)
+	svc := usecase.NewBankAccountUsecase(repo)
 
 	// Test GetByAccountNumber Success
 	acc, err := svc.GetByAccountNumber("12345")

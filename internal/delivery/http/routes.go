@@ -5,12 +5,13 @@ import (
 	"github.com/gofiber/swagger"
 )
 
-func SetupRoutes(
-	app *fiber.App,
-	userHandler *UserHandler,
-	withdrawHandler *WithdrawHandler,
-	bankAccountHandler *BankAccountHandler,
-) {
+type Handlers struct {
+	User        *UserHandler
+	Withdraw    *WithdrawHandler
+	BankAccount *BankAccountHandler
+}
+
+func SetupRoutes(app *fiber.App, h *Handlers) {
 	// Default Health Check
 	app.Get("/api/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -24,14 +25,14 @@ func SetupRoutes(
 
 	// API Routes
 	api := app.Group("/api/v1")
-	api.Get("/users/:id", userHandler.GetUser)
+	api.Get("/users/:id", h.User.GetUser)
 
 	// Bank Account Routes
-	app.Get("/bank-account", bankAccountHandler.GetBankAccount)
-	app.Get("/bank-account/daily-limit", bankAccountHandler.GetDailyLimit)
+	app.Get("/bank-account", h.BankAccount.GetBankAccount)
+	app.Get("/bank-account/daily-limit", h.BankAccount.GetDailyLimit)
 
 	// Withdraw Routes
-	app.Get("/withdraw", withdrawHandler.GetWithdraws)
-	app.Post("/withdraw/update", withdrawHandler.UpdateWithdraw)
-	app.Post("/withdraw/validate", withdrawHandler.ValidateWithdraw)
+	app.Get("/withdraw", h.Withdraw.GetWithdraws)
+	app.Post("/withdraw/update", h.Withdraw.UpdateWithdraw)
+	app.Post("/withdraw/validate", h.Withdraw.ValidateWithdraw)
 }

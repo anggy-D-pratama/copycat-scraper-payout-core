@@ -1,25 +1,25 @@
-package service
+package usecase
 
 import (
 	"boilerplate/internal/model"
 	"boilerplate/internal/repository"
 )
 
-type BankAccountService interface {
+type BankAccountUsecase interface {
 	GetByAccountNumber(accountNumber string) (*model.BankAccountResponse, error)
 	GetDailyLimit(accountNumber string) (*model.DailyLimitResponse, error)
 }
 
-type bankAccountService struct {
+type bankAccountUsecase struct {
 	repo repository.BankAccountRepository
 }
 
-func NewBankAccountService(repo repository.BankAccountRepository) BankAccountService {
-	return &bankAccountService{repo: repo}
+func NewBankAccountUsecase(repo repository.BankAccountRepository) BankAccountUsecase {
+	return &bankAccountUsecase{repo: repo}
 }
 
-func (s *bankAccountService) GetByAccountNumber(accountNumber string) (*model.BankAccountResponse, error) {
-	acc, err := s.repo.FindByAccountNumber(accountNumber)
+func (u *bankAccountUsecase) GetByAccountNumber(accountNumber string) (*model.BankAccountResponse, error) {
+	acc, err := u.repo.FindByAccountNumber(accountNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,8 @@ func (s *bankAccountService) GetByAccountNumber(accountNumber string) (*model.Ba
 	}, nil
 }
 
-func (s *bankAccountService) GetDailyLimit(accountNumber string) (*model.DailyLimitResponse, error) {
-	acc, err := s.repo.FindByAccountNumber(accountNumber)
+func (u *bankAccountUsecase) GetDailyLimit(accountNumber string) (*model.DailyLimitResponse, error) {
+	acc, err := u.repo.FindByAccountNumber(accountNumber)
 	if err != nil {
 		return nil, err
 	}

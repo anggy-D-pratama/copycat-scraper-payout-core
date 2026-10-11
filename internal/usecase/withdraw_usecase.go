@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"errors"
@@ -6,22 +6,22 @@ import (
 	"boilerplate/internal/repository"
 )
 
-type WithdrawService interface {
+type WithdrawUsecase interface {
 	GetWithdraws(bankAccountID int, status string) ([]model.WithdrawResponse, error)
 	UpdateWithdraw(req model.WithdrawUpdateRequest) error
 	ValidateWithdraw(req model.WithdrawValidateRequest) error
 }
 
-type withdrawService struct {
+type withdrawUsecase struct {
 	repo repository.WithdrawRepository
 }
 
-func NewWithdrawService(repo repository.WithdrawRepository) WithdrawService {
-	return &withdrawService{repo: repo}
+func NewWithdrawUsecase(repo repository.WithdrawRepository) WithdrawUsecase {
+	return &withdrawUsecase{repo: repo}
 }
 
-func (s *withdrawService) GetWithdraws(bankAccountID int, status string) ([]model.WithdrawResponse, error) {
-	withdraws, err := s.repo.FindByFilter(bankAccountID, status)
+func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]model.WithdrawResponse, error) {
+	withdraws, err := u.repo.FindByFilter(bankAccountID, status)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (s *withdrawService) GetWithdraws(bankAccountID int, status string) ([]mode
 	return res, nil
 }
 
-func (s *withdrawService) UpdateWithdraw(req model.WithdrawUpdateRequest) error {
-	w, err := s.repo.FindByID(req.ID)
+func (u *withdrawUsecase) UpdateWithdraw(req model.WithdrawUpdateRequest) error {
+	w, err := u.repo.FindByID(req.ID)
 	if err != nil {
 		return err
 	}
@@ -55,11 +55,11 @@ func (s *withdrawService) UpdateWithdraw(req model.WithdrawUpdateRequest) error 
 		w.UniqueCode = req.UniqueCode
 	}
 
-	return s.repo.Update(w)
+	return u.repo.Update(w)
 }
 
-func (s *withdrawService) ValidateWithdraw(req model.WithdrawValidateRequest) error {
-	w, err := s.repo.FindByID(req.ID)
+func (u *withdrawUsecase) ValidateWithdraw(req model.WithdrawValidateRequest) error {
+	w, err := u.repo.FindByID(req.ID)
 	if err != nil {
 		return err
 	}

@@ -1,11 +1,11 @@
-package service_test
+package usecase_test
 
 import (
 	"errors"
 	"testing"
 
 	"boilerplate/internal/model"
-	"boilerplate/internal/service"
+	"boilerplate/internal/usecase"
 )
 
 type mockWithdrawRepo struct {
@@ -34,13 +34,13 @@ func (m *mockWithdrawRepo) Update(w *model.Withdraw) error {
 	return nil
 }
 
-func TestWithdrawService(t *testing.T) {
+func TestWithdrawUsecase(t *testing.T) {
 	repo := &mockWithdrawRepo{
 		data: map[int]*model.Withdraw{
 			1: {ID: 1, BankAccountId: 10, Status: "QUEUE", TransactionNo: "TRX-1"},
 		},
 	}
-	svc := service.NewWithdrawService(repo)
+	svc := usecase.NewWithdrawUsecase(repo)
 
 	// Test GetWithdraws
 	ws, err := svc.GetWithdraws(10, "QUEUE")

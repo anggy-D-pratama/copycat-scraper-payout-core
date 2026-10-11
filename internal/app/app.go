@@ -8,7 +8,7 @@ import (
 	httpDelivery "boilerplate/internal/delivery/http"
 	"boilerplate/internal/model"
 	"boilerplate/internal/repository"
-	"boilerplate/internal/service"
+	"boilerplate/internal/usecase"
 	"boilerplate/pkg/database"
 )
 
@@ -26,18 +26,24 @@ func Run() {
 
 	// Dependency Injection
 	userRepo := repository.NewUserRepository()
-	userSvc := service.NewUserService(userRepo)
-	userHandler := httpDelivery.NewUserHandler(userSvc)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+	userHandler := httpDelivery.NewUserHandler(userUsecase)
 
 	bankAccountRepo := repository.NewBankAccountRepository(db)
-	bankAccountSvc := service.NewBankAccountService(bankAccountRepo)
-	bankAccountHandler := httpDelivery.NewBankAccountHandler(bankAccountSvc)
+	bankAccountUsecase := usecase.NewBankAccountUsecase(bankAccountRepo)
+	bankAccountHandler := httpDelivery.NewBankAccountHandler(bankAccountUsecase)
 
 	withdrawRepo := repository.NewWithdrawRepository(db)
-	withdrawSvc := service.NewWithdrawService(withdrawRepo)
-	withdrawHandler := httpDelivery.NewWithdrawHandler(withdrawSvc)
+	withdrawUsecase := usecase.NewWithdrawUsecase(withdrawRepo)
+	withdrawHandler := httpDelivery.NewWithdrawHandler(withdrawUsecase)
 
-	httpDelivery.SetupRoutes(server, userHandler, withdrawHandler, bankAccountHandler)
+	handlers := &httpDelivery.Handlers{
+		User:        userHandler,
+		Withdraw:    withdrawHandler,
+		BankAccount: bankAccountHandler,
+	}
+
+	httpDelivery.SetupRoutes(server, handlers)
 
 	log.Fatal(server.Listen(":3000"))
 }
