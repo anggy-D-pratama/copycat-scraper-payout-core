@@ -29,13 +29,15 @@ func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]mode
 	var res []model.WithdrawResponse
 	for _, w := range withdraws {
 		res = append(res, model.WithdrawResponse{
-			ID:            w.ID,
-			TransactionNo: w.TransactionNo,
-			Amount:        w.Amount,
-			Remark:        w.Remark,
-			BankAccount:   w.BankAccount,
-			UniqueCode:    w.UniqueCode,
-			Status:        w.Status,
+			ID:              w.ID,
+			TransactionNo:   w.TransactionNo,
+			TransactionCode: w.TransactionCode,
+			BankCode:        w.BankCode,
+			Amount:          w.Amount,
+			Remark:          w.Remark,
+			BankAccount:     w.BankAccount,
+			UniqueCode:      w.UniqueCode,
+			Status:          w.Status,
 		})
 	}
 	return res, nil
