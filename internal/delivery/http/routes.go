@@ -12,6 +12,7 @@ type Handlers struct {
 	User        *UserHandler
 	Withdraw    *WithdrawHandler
 	BankAccount *BankAccountHandler
+	Telegram    *TelegramHandler
 }
 
 func SetupRoutes(app *fiber.App, h *Handlers) {
@@ -43,4 +44,11 @@ func SetupRoutes(app *fiber.App, h *Handlers) {
 	withdraw.Get("", h.Withdraw.GetWithdraws)
 	withdraw.Post("/update", h.Withdraw.UpdateWithdraw)
 	withdraw.Post("/validate", h.Withdraw.ValidateWithdraw)
+
+	// Telegram Mock Routes (Protected)
+	if h.Telegram != nil {
+		telegram := app.Group("/telegram", hmacAuth)
+		telegram.Post("/send", h.Telegram.SendMessage)
+		telegram.Post("/save-image", h.Telegram.SaveImage)
+	}
 }
