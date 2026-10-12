@@ -24,15 +24,34 @@ func (u *bankAccountUsecase) GetByAccountNumber(accountNumber string) (*model.Ba
 		return nil, err
 	}
 
+	deviceCode := acc.DeviceCode
+	if deviceCode == "" {
+		deviceCode = acc.DeviceID
+	}
+	portAppium := acc.PortAppium
+	if portAppium == 0 {
+		portAppium = 4723
+	}
+	safeKey := acc.SafeKey
+	if safeKey == "" {
+		safeKey = acc.Pin
+	}
+
 	return &model.BankAccountResponse{
 		ID:            acc.ID,
 		AccountNumber: acc.AccountNumber,
 		BankName:      acc.BankName,
 		AccountName:   acc.AccountName,
 		DeviceID:      acc.DeviceID,
-		Pin:           acc.Pin,
-		Username:      acc.Username,
-		Password:      acc.Password,
+		Device: model.DeviceResponse{
+			ID:         acc.ID,
+			Code:       deviceCode,
+			PortAppium: portAppium,
+		},
+		SafeKey:  safeKey,
+		Pin:      acc.Pin,
+		Username: acc.Username,
+		Password: acc.Password,
 	}, nil
 }
 
@@ -45,5 +64,9 @@ func (u *bankAccountUsecase) GetDailyLimit(accountNumber string) (*model.DailyLi
 	return &model.DailyLimitResponse{
 		AccountNumber: acc.AccountNumber,
 		DailyLimit:    acc.DailyLimit,
+		DailyLimitTrx: 500,
+		CountToday:    0,
+		IsReached:     false,
+		Reached:       false,
 	}, nil
 }

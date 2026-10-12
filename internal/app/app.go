@@ -68,6 +68,9 @@ func seed(db *gorm.DB) {
 			BankName:      "BCA",
 			AccountName:   "Bot Testing Account",
 			DeviceID:      "device-123",
+			DeviceCode:    "device-123",
+			PortAppium:    4723,
+			SafeKey:       "123456",
 			Pin:           "123456",
 			Username:      "bot_user",
 			Password:      "password",
@@ -83,7 +86,7 @@ func seed(db *gorm.DB) {
 			Remark:          "Test withdraw 1",
 			BankAccount:     "1234567890",
 			BankAccountId:   acc.ID,
-			Status:          "QUEUE",
+			Status:          "queue",
 		})
 		db.Create(&model.Withdraw{
 			TransactionNo:   "TRX-002",
@@ -93,7 +96,7 @@ func seed(db *gorm.DB) {
 			Remark:          "Test withdraw 2",
 			BankAccount:     "1234567890",
 			BankAccountId:   acc.ID,
-			Status:          "QUEUE",
+			Status:          "queue",
 		})
 	}
 }

@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"errors"
+	"strings"
+
 	"boilerplate/internal/model"
 	"boilerplate/internal/repository"
 )
@@ -26,7 +28,7 @@ func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]mode
 		return nil, err
 	}
 
-	var res []model.WithdrawResponse
+	res := make([]model.WithdrawResponse, 0, len(withdraws))
 	for _, w := range withdraws {
 		res = append(res, model.WithdrawResponse{
 			ID:              w.ID,
@@ -35,9 +37,11 @@ func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]mode
 			BankCode:        w.BankCode,
 			Amount:          w.Amount,
 			Remark:          w.Remark,
+			Notes:           w.Notes,
 			BankAccount:     w.BankAccount,
+			BankAccountId:   w.BankAccountId,
 			UniqueCode:      w.UniqueCode,
-			Status:          w.Status,
+			Status:          strings.ToLower(w.Status),
 		})
 	}
 	return res, nil

@@ -39,16 +39,20 @@ func NewHMACAuth(config ...HMACAuthConfig) fiber.Handler {
 		// 1. Validasi keberadaan ketiga header
 		if apiKeyHeader == "" || timestampHeader == "" || signatureHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Unauthorized: missing required authentication headers (x-api-key, x-timestamp, x-signature)",
+				"status": "error",
+				"data": fiber.Map{
+					"message": "Unauthorized: missing required authentication headers (x-api-key, x-timestamp, x-signature)",
+				},
 			})
 		}
 
 		// 2. Validasi x-api-key
 		if apiKeyHeader != cfg.APIKey {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Unauthorized: invalid api key",
+				"status": "error",
+				"data": fiber.Map{
+					"message": "Unauthorized: invalid api key",
+				},
 			})
 		}
 
@@ -63,8 +67,10 @@ func NewHMACAuth(config ...HMACAuthConfig) fiber.Handler {
 		providedMAC, err := hex.DecodeString(signatureHeader)
 		if err != nil || !hmac.Equal(providedMAC, expectedMAC) || signatureHeader != expectedHex {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Unauthorized: invalid signature",
+				"status": "error",
+				"data": fiber.Map{
+					"message": "Unauthorized: invalid signature",
+				},
 			})
 		}
 
