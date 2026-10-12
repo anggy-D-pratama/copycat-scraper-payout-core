@@ -410,6 +410,82 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/telegram/send": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [],
+                        "Timestamp": [],
+                        "Signature": []
+                    }
+                ],
+                "description": "Mock endpoint to receive telegram send requests from bot",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telegram"
+                ],
+                "summary": "Mock Telegram Send Message",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/telegram/save-image": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [],
+                        "Timestamp": [],
+                        "Signature": []
+                    }
+                ],
+                "description": "Mock endpoint to receive telegram image/screenshot uploads from bot",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telegram"
+                ],
+                "summary": "Mock Telegram Save Image",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

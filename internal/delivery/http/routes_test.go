@@ -110,6 +110,7 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		User:        &UserHandler{},
 		Withdraw:    NewWithdrawHandler(&mockWithdrawUsecase{}),
 		BankAccount: NewBankAccountHandler(&mockBankAccountUsecase{}),
+		Telegram:    NewTelegramHandler(),
 	}
 
 	SetupRoutes(app, handlers)
@@ -261,6 +262,46 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		payload := []byte(`{"id":1,"status":"process","notes":"ok","unique_code":"REF1"}`)
 		req := httptest.NewRequest(http.MethodPost, "/withdraw/update", bytes.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+	})
+
+	t.Run("Protected Route POST /telegram/send - Valid Success Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		payload := []byte(`{"account_number":"1234567890","text":"Testing bot message","is_photo":"false","is_file":"false"}`)
+		req := httptest.NewRequest(http.MethodPost, "/telegram/send", bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+	})
+
+	t.Run("Protected Route POST /telegram/save-image - Valid Success Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		req := httptest.NewRequest(http.MethodPost, "/telegram/save-image", nil)
 		req.Header.Set("x-api-key", apiKey)
 		req.Header.Set("x-timestamp", ts)
 		req.Header.Set("x-signature", sig)
