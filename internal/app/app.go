@@ -39,10 +39,13 @@ func Run() {
 	withdrawUsecase := usecase.NewWithdrawUsecase(withdrawRepo)
 	withdrawHandler := httpDelivery.NewWithdrawHandler(withdrawUsecase)
 
+	telegramHandler := httpDelivery.NewTelegramHandler()
+
 	handlers := &httpDelivery.Handlers{
 		User:        userHandler,
 		Withdraw:    withdrawHandler,
 		BankAccount: bankAccountHandler,
+		Telegram:    telegramHandler,
 	}
 
 	httpDelivery.SetupRoutes(server, handlers)
