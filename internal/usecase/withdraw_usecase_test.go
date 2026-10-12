@@ -52,8 +52,8 @@ func TestWithdrawUsecase(t *testing.T) {
 	if ws[0].BankCode != "BCA" || ws[0].TransactionCode != "TXC-1" {
 		t.Errorf("expected BankCode BCA and TransactionCode TXC-1, got %s and %s", ws[0].BankCode, ws[0].TransactionCode)
 	}
-	if ws[0].UpdatedAt != now.Format(time.RFC3339) {
-		t.Errorf("expected UpdatedAt %s, got %s", now.Format(time.RFC3339), ws[0].UpdatedAt)
+	if ws[0].UpdatedAt != now.Format("2006-01-02 15:04:05") {
+		t.Errorf("expected UpdatedAt %s, got %s", now.Format("2006-01-02 15:04:05"), ws[0].UpdatedAt)
 	}
 
 	// Test UpdateWithdraw

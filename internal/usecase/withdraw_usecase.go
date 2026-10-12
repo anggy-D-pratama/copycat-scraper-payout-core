@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"strings"
-	"time"
 
 	"boilerplate/internal/model"
 	"boilerplate/internal/repository"
@@ -43,7 +42,7 @@ func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]mode
 			BankAccountId:   w.BankAccountId,
 			UniqueCode:      w.UniqueCode,
 			Status:          strings.ToLower(w.Status),
-			UpdatedAt:       w.UpdatedAt.Format(time.RFC3339),
+			UpdatedAt:       w.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return res, nil
