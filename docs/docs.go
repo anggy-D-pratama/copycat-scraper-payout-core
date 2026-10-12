@@ -604,6 +604,9 @@ const docTemplate = `{
                 },
                 "unique_code": {
                     "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },

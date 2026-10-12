@@ -3,6 +3,7 @@ package usecase_test
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"boilerplate/internal/model"
 	"boilerplate/internal/usecase"
@@ -35,9 +36,10 @@ func (m *mockWithdrawRepo) Update(w *model.Withdraw) error {
 }
 
 func TestWithdrawUsecase(t *testing.T) {
+	now := time.Now().Truncate(time.Second)
 	repo := &mockWithdrawRepo{
 		data: map[int]*model.Withdraw{
-			1: {ID: 1, BankAccountId: 10, Status: "QUEUE", TransactionNo: "TRX-1", TransactionCode: "TXC-1", BankCode: "BCA"},
+			1: {ID: 1, BankAccountId: 10, Status: "QUEUE", TransactionNo: "TRX-1", TransactionCode: "TXC-1", BankCode: "BCA", UpdatedAt: now},
 		},
 	}
 	svc := usecase.NewWithdrawUsecase(repo)
@@ -49,6 +51,9 @@ func TestWithdrawUsecase(t *testing.T) {
 	}
 	if ws[0].BankCode != "BCA" || ws[0].TransactionCode != "TXC-1" {
 		t.Errorf("expected BankCode BCA and TransactionCode TXC-1, got %s and %s", ws[0].BankCode, ws[0].TransactionCode)
+	}
+	if ws[0].UpdatedAt != now.Format("2006-01-02 15:04:05") {
+		t.Errorf("expected UpdatedAt %s, got %s", now.Format("2006-01-02 15:04:05"), ws[0].UpdatedAt)
 	}
 
 	// Test UpdateWithdraw

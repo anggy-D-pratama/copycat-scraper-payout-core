@@ -42,6 +42,7 @@ func (u *withdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]mode
 			BankAccountId:   w.BankAccountId,
 			UniqueCode:      w.UniqueCode,
 			Status:          strings.ToLower(w.Status),
+			UpdatedAt:       w.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return res, nil

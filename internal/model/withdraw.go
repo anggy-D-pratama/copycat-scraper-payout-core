@@ -30,6 +30,7 @@ type WithdrawResponse struct {
 	BankAccountId   int     `json:"bank_account_id"`
 	UniqueCode      *string `json:"unique_code"`
 	Status          string  `json:"status"`
+	UpdatedAt       string  `json:"updated_at"`
 }
 
 type WithdrawUpdateRequest struct {

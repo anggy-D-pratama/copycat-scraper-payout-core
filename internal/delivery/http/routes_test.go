@@ -70,6 +70,7 @@ func (m *mockWithdrawUsecase) GetWithdraws(bankAccountID int, status string) ([]
 			BankAccount:     "1234567890",
 			BankAccountId:   1,
 			Status:          "queue",
+			UpdatedAt:       "2026-09-01 09:05:00",
 		},
 	}, nil
 }
@@ -232,6 +233,9 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		data, ok := body["data"].([]interface{})
 		assert.True(t, ok)
 		assert.Len(t, data, 1)
+		item, ok := data[0].(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, "2026-09-01 09:05:00", item["updated_at"])
 	})
 
 	t.Run("Protected Route POST /withdraw/validate - Valid Envelope Response", func(t *testing.T) {
