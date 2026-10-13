@@ -17,7 +17,7 @@ import (
 func Run() {
 	// Init DB
 	db := database.Connect()
-	if err := db.AutoMigrate(&model.BankAccount{}, &model.Withdraw{}); err != nil {
+	if err := db.AutoMigrate(&model.BankAccount{}, &model.Withdraw{}, &model.BankTransaction{}); err != nil {
 		log.Fatal("AutoMigrate failed: ", err)
 	}
 
@@ -39,13 +39,18 @@ func Run() {
 	withdrawUsecase := usecase.NewWithdrawUsecase(withdrawRepo)
 	withdrawHandler := httpDelivery.NewWithdrawHandler(withdrawUsecase)
 
+	bankTransactionRepo := repository.NewBankTransactionRepository(db)
+	bankTransactionUsecase := usecase.NewBankTransactionUsecase(bankTransactionRepo)
+	bankTransactionHandler := httpDelivery.NewBankTransactionHandler(bankTransactionUsecase)
+
 	telegramHandler := httpDelivery.NewTelegramHandler()
 
 	handlers := &httpDelivery.Handlers{
-		User:        userHandler,
-		Withdraw:    withdrawHandler,
-		BankAccount: bankAccountHandler,
-		Telegram:    telegramHandler,
+		User:            userHandler,
+		Withdraw:        withdrawHandler,
+		BankAccount:     bankAccountHandler,
+		BankTransaction: bankTransactionHandler,
+		Telegram:        telegramHandler,
 	}
 
 	httpDelivery.SetupRoutes(server, handlers)
