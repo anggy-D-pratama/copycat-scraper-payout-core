@@ -108,10 +108,11 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 	app := fiber.New()
 
 	handlers := &Handlers{
-		User:        &UserHandler{},
-		Withdraw:    NewWithdrawHandler(&mockWithdrawUsecase{}),
-		BankAccount: NewBankAccountHandler(&mockBankAccountUsecase{}),
-		Telegram:    NewTelegramHandler(),
+		User:            &UserHandler{},
+		Withdraw:        NewWithdrawHandler(&mockWithdrawUsecase{}),
+		BankAccount:     NewBankAccountHandler(&mockBankAccountUsecase{}),
+		BankTransaction: NewBankTransactionHandler(&mockBankTransactionUsecase{}),
+		Telegram:        NewTelegramHandler(),
 	}
 
 	SetupRoutes(app, handlers)
@@ -306,6 +307,27 @@ func TestSetupRoutes_HMACAuth(t *testing.T) {
 		sig := genSig(secretKey, apiKey, ts)
 
 		req := httptest.NewRequest(http.MethodPost, "/telegram/save-image", nil)
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("x-timestamp", ts)
+		req.Header.Set("x-signature", sig)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+		var body map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "success", body["status"])
+	})
+
+	t.Run("Protected Route POST /bank-transactions/bulk - Valid Success Response", func(t *testing.T) {
+		ts := "1773223200000"
+		sig := genSig(secretKey, apiKey, ts)
+
+		payload := []byte(`[{"bank_account_id":1,"transaction_date":"2026-10-13","value_date":"2026-10-13","description":"Test trx","amount":50000}]`)
+		req := httptest.NewRequest(http.MethodPost, "/bank-transactions/bulk", bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("x-api-key", apiKey)
 		req.Header.Set("x-timestamp", ts)
 		req.Header.Set("x-signature", sig)
