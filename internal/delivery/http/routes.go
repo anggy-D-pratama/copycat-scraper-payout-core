@@ -47,8 +47,8 @@ func SetupRoutes(app *fiber.App, h *Handlers) {
 	withdraw.Post("/validate", h.Withdraw.ValidateWithdraw)
 
 	// Bank Transaction Routes (Protected)
-	coreMobile := app.Group("/core-mobile", hmacAuth)
-	coreMobile.Post("/bank-transactions/bulk", h.BankTransaction.BulkInsert)
+	bankTransactions := app.Group("/bank-transactions", hmacAuth)
+	bankTransactions.Post("/bulk", h.BankTransaction.BulkInsert)
 
 	// Telegram Mock Routes (Protected)
 	if h.Telegram != nil {

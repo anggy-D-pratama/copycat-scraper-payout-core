@@ -30,7 +30,7 @@ func NewBankTransactionHandler(u usecase.BankTransactionUsecase) *BankTransactio
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      401   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
-// @Router       /core-mobile/bank-transactions/bulk [post]
+// @Router       /bank-transactions/bulk [post]
 func (h *BankTransactionHandler) BulkInsert(c *fiber.Ctx) error {
 	var requests []model.BankTransactionRequest
 	if err := c.BodyParser(&requests); err != nil {

@@ -56,7 +56,7 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 
 	t.Run("success bulk insert", func(t *testing.T) {
 		app := fiber.New()
-		app.Post("/core-mobile/bank-transactions/bulk", handler.BulkInsert)
+		app.Post("/bank-transactions/bulk", handler.BulkInsert)
 
 		payload := []model.BankTransactionRequest{
 			{
@@ -75,7 +75,7 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 		}
 		body, _ := json.Marshal(payload)
 
-		req := httptest.NewRequest("POST", "/core-mobile/bank-transactions/bulk", bytes.NewBuffer(body))
+		req := httptest.NewRequest("POST", "/bank-transactions/bulk", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		timestamp := fmt.Sprint(time.Now().Unix())
 		sig := genSig(secretKey, apiKey, timestamp)
@@ -97,12 +97,12 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 
 	t.Run("empty payload array", func(t *testing.T) {
 		app := fiber.New()
-		app.Post("/core-mobile/bank-transactions/bulk", handler.BulkInsert)
+		app.Post("/bank-transactions/bulk", handler.BulkInsert)
 
 		payload := []model.BankTransactionRequest{}
 		body, _ := json.Marshal(payload)
 
-		req := httptest.NewRequest("POST", "/core-mobile/bank-transactions/bulk", bytes.NewBuffer(body))
+		req := httptest.NewRequest("POST", "/bank-transactions/bulk", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		timestamp := fmt.Sprint(time.Now().Unix())
 		sig := genSig(secretKey, apiKey, timestamp)
@@ -122,9 +122,9 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 
 	t.Run("invalid request body", func(t *testing.T) {
 		app := fiber.New()
-		app.Post("/core-mobile/bank-transactions/bulk", handler.BulkInsert)
+		app.Post("/bank-transactions/bulk", handler.BulkInsert)
 
-		req := httptest.NewRequest("POST", "/core-mobile/bank-transactions/bulk", bytes.NewBuffer([]byte(`invalid-json`)))
+		req := httptest.NewRequest("POST", "/bank-transactions/bulk", bytes.NewBuffer([]byte(`invalid-json`)))
 		req.Header.Set("Content-Type", "application/json")
 		timestamp := fmt.Sprint(time.Now().Unix())
 		sig := genSig(secretKey, apiKey, timestamp)
@@ -144,7 +144,7 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 
 	t.Run("validation error - missing bank_account_id", func(t *testing.T) {
 		app := fiber.New()
-		app.Post("/core-mobile/bank-transactions/bulk", handler.BulkInsert)
+		app.Post("/bank-transactions/bulk", handler.BulkInsert)
 
 		payload := []model.BankTransactionRequest{
 			{
@@ -157,7 +157,7 @@ func TestBankTransactionHandler_BulkInsert(t *testing.T) {
 		}
 		body, _ := json.Marshal(payload)
 
-		req := httptest.NewRequest("POST", "/core-mobile/bank-transactions/bulk", bytes.NewBuffer(body))
+		req := httptest.NewRequest("POST", "/bank-transactions/bulk", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		timestamp := fmt.Sprint(time.Now().Unix())
 		sig := genSig(secretKey, apiKey, timestamp)
