@@ -9,10 +9,11 @@ import (
 )
 
 type Handlers struct {
-	User        *UserHandler
-	Withdraw    *WithdrawHandler
-	BankAccount *BankAccountHandler
-	Telegram    *TelegramHandler
+	User            *UserHandler
+	Withdraw        *WithdrawHandler
+	BankAccount     *BankAccountHandler
+	BankTransaction *BankTransactionHandler
+	Telegram        *TelegramHandler
 }
 
 func SetupRoutes(app *fiber.App, h *Handlers) {
@@ -44,6 +45,10 @@ func SetupRoutes(app *fiber.App, h *Handlers) {
 	withdraw.Get("", h.Withdraw.GetWithdraws)
 	withdraw.Post("/update", h.Withdraw.UpdateWithdraw)
 	withdraw.Post("/validate", h.Withdraw.ValidateWithdraw)
+
+	// Bank Transaction Routes (Protected)
+	coreMobile := app.Group("/core-mobile", hmacAuth)
+	coreMobile.Post("/bank-transactions/bulk", h.BankTransaction.BulkInsert)
 
 	// Telegram Mock Routes (Protected)
 	if h.Telegram != nil {
